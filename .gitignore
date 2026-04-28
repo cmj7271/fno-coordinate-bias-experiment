@@ -1,0 +1,18 @@
+# Julia
+.julia/
+*.ji
+
+# Experiment artifacts
+data/raw/
+checkpoints/
+results/logs/
+results/metrics/
+*.jld2
+
+# Temporary smoke files
+smoke_test.toml
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/

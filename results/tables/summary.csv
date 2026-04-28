@@ -1,0 +1,13 @@
+dataset,model,use_coord,relative_l2_mean,relative_l2_std,initial_sensitivity_error,shift_equivariance_error,boundary_error,parameter_count,train_time_seconds
+periodic_heat,fno,false,0.02045143,0.012174079,0.0012965486,1.1614592e-7,,,
+periodic_heat,fno,true,0.019791003,0.007692799,0.0023975174,0.018245824,,,
+periodic_heat,deeponet,false,0.7161769,0.20108767,0.2937719,1.0017179,,,
+dirichlet_heat,fno,false,0.033778228,0.0118915755,0.004285001,,0.19752748,,
+dirichlet_heat,fno,true,0.021996107,0.008572663,0.004511673,,0.12044074,,
+dirichlet_heat,deeponet,false,0.5890901,0.16388728,0.21457289,,1.6741366,,
+periodic_poisson,fno,false,0.1346085,0.08476922,,3.084149e-6,,,
+periodic_poisson,fno,true,0.34547427,0.20200144,,0.4211893,,,
+periodic_poisson,deeponet,false,7.5955048,9.683291,,3.1751223,,,
+variable_poisson,fno,false,0.6036051,0.4910977,,,0.29040036,,
+variable_poisson,fno,true,0.43128598,0.51350677,,,0.14057082,,
+variable_poisson,deeponet,false,0.718978,0.41049942,,,0.26882035,,

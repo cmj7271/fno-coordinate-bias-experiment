@@ -1,0 +1,37 @@
+name = "periodic_poisson"
+seed = 42
+
+[model.deeponet]
+depth = 3
+latent_dim = 64
+branch_width = 64
+activation = "tanh"
+trunk_width = 64
+
+[model.fno]
+width = 32
+activation = "gelu"
+modes = 16
+layers = 3
+
+[pde]
+has_initial_condition = false
+is_translation_relative = true
+boundary = "periodic"
+mean_zero = true
+
+[data]
+nx = 64
+train_samples = 128
+valid_samples = 32
+test_samples = 32
+max_mode = 8
+amplitude = 1.0
+
+[train]
+epochs = 50
+batch_size = 16
+learning_rate = 0.001
+
+[eval]
+shift_steps = 8
