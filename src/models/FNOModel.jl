@@ -26,7 +26,7 @@ Builds a 1D FNO model wrapper using NeuralOperators.jl.
 - `out_channels`: Number of output channels (must be 1 for PDE solutions).
 
 # Returns
-A function/closure representing the trained FNO model.
+A `FourierNeuralOperator` model struct representing the initialized (untrained) FNO model.
 """
 function build_fno_model(config::Dict{Symbol, Any}; in_channels::Int, out_channels::Int=1)
     # Hyperparameters from config

@@ -87,8 +87,8 @@ function train_model(config_path::String, model_name::Symbol, use_coord::Bool)::
     grid_points = Float32.(range(0, 1, length=nx))
 
     dataset = DatasetIO.load_and_preprocess_dataset(config_path, use_coord, grid_points)
-    X = dataset[:X]
-    Y = dataset[:Y]
+    X = dataset.X
+    Y = dataset.Y
 
     @info "Loaded dataset shapes: X=$(size(X)), Y=$(size(Y))"
 

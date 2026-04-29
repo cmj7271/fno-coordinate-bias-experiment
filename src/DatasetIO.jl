@@ -3,12 +3,22 @@
 # ==============================================================================
 
 module DatasetIO
-
 using JLD2
 using LinearAlgebra
 using Statistics
 
 using ..Config
+
+# ----------------------------------------------------------------------
+# PDEData Structure Definition (Data container for all preprocessed dataset info)
+# It encapsulates X, Y, the configuration, and the grid used for processing.
+# ----------------------------------------------------------------------
+struct PDEData
+    X::AbstractArray{<:AbstractFloat}
+    Y::AbstractArray{<:AbstractFloat}
+    config::Dict{Symbol, Any}
+    grid::AbstractArray{<:AbstractFloat}
+end
 
 function checkpoint_path(config::Dict, model_name::Symbol, use_coord::Bool)
     dataset_name = String(config[:name])
@@ -97,9 +107,9 @@ Loads the dataset and performs optional preprocessing (coordinate channel additi
 - `grid`: The spatial grid vector (used for coordinate channel construction).
 
 # Returns
-Dict containing the preprocessed data X and Y arrays.
+`PDEData` struct containing the preprocessed X and Y arrays, the configuration dictionary, and the spatial grid.
 """
-function load_and_preprocess_dataset(config_path::String, add_coord::Bool, grid::Vector{Float32})
+function load_and_preprocess_dataset(config_path::String, add_coord::Bool, grid::Vector{Float32})::PDEData
     @info "--- Preprocessing Dataset: $config_path ---"
     raw_data = load_dataset(config_path)
     X_raw = raw_data[:X]
@@ -113,7 +123,15 @@ function load_and_preprocess_dataset(config_path::String, add_coord::Bool, grid:
     end
     
     @info "Data successfully preprocessed. X shape: $(size(X)), Y shape: $(size(Y))"
-    return Dict(:X => X, :Y => Y)
+    
+    # Return the structured data object containing all necessary context
+    data_struct = PDEData(
+        X, 
+        Y, 
+        Config.load_config(config_path),
+        grid
+    )
+    return data_struct
 end
 
 function validate_xy(X, Y)
@@ -127,4 +145,4 @@ function validate_xy(X, Y)
     return nothing
 end
 
-end # module DatasetIO
+end
