@@ -1,7 +1,7 @@
 using Test
-using Metrics
-using FNOModel
-using DeepONetModel
+using FNOExperiment.Metrics
+using FNOExperiment.FNOModel
+using FNOExperiment.DeepONetModel
 
 # Test Shape Logic (test_shapes.jl)
 
@@ -17,12 +17,12 @@ using DeepONetModel
     end
     
     # Test shape contract
-    @test size(mock_fno_forward(ones(5, 3, 10), :dummy, :dummy)) == (5, 1, 10)
+    @test size(mock_fno_forward(ones(Float32, 5, 3, 10), :dummy, :dummy)) == (5, 1, 10)
     
     # Test coordinate addition contract
     # Input shape: (N, C, S) -> (N, C+1, S)
-    X_original = ones(5, 3, 10)
-    grid = range(0.0, 1.0, length=5, step=1.0/5)
+    X_original = ones(Float32, 5, 3, 10)
+    grid = range(0.0f0, 1.0f0, length=5)
     X_with_coord = cat(X_original, reshape(repeat(grid, 1, 10), 5, 1, 10), dims=2)
     @test size(X_with_coord) == (5, 4, 10)
 end
@@ -39,5 +39,5 @@ end
     end
     
     # Test shape contract
-    @test size(mock_deeponet_forward(ones(5, 3, 10), collect(range(0.0, 1.0, length=5)))) == (5, 1, 10)
+    @test size(mock_deeponet_forward(ones(Float32, 5, 3, 10), collect(range(0.0f0, 1.0f0, length=5)))) == (5, 1, 10)
 end

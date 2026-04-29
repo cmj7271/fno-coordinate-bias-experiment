@@ -1,9 +1,11 @@
 using Test
 using Random
-using DataGenerators
-using Config
-using DatasetIO
 using LinearAlgebra
+using Statistics
+
+using FNOExperiment.DataGenerators
+using FNOExperiment.Config
+using FNOExperiment.DatasetIO
 
 # Test Data Generation Logic (test_data_generation.jl)
 
@@ -42,7 +44,7 @@ end
     )
 
     # Mock the RNG seed for determinism
-    global Random.seed!(123)
+    Random.seed!(123)
 
     # Test periodic_heat generation
     test_data = DataGenerators.generate_periodic_heat_dataset(dummy_config)
@@ -60,5 +62,5 @@ end
     
     # 3. Check periodicity/mean (should be near zero for the target)
     # Since we only generated one sample, we check the mean of the target Y
-    mean(Y[:, :, 1]) ≈ 0.0
+    @test isapprox(mean(Y[:, :, 1]), 0.0, atol=1e-5)
 end
