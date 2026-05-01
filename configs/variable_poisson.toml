@@ -2,11 +2,11 @@ name = "variable_poisson"
 seed = 42
 
 [model.deeponet]
-depth = 3
-latent_dim = 64
-branch_width = 64
-activation = "tanh"
-trunk_width = 64
+depth = 4
+latent_dim = 128
+branch_width = 128
+trunk_width = 128
+activation = "gelu"
 
 [model.fno]
 width = 32
@@ -29,7 +29,7 @@ max_mode = 8
 amplitude = 1.0
 
 [train]
-epochs = 50
+epochs = 200
 batch_size = 16
 learning_rate = 0.001
 
