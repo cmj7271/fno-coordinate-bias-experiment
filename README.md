@@ -6,7 +6,7 @@
 
 실험의 핵심 관심사는 다음 두 가지입니다.
 
-1. PDE 해가 **초기함수(initial condition)** 에 얼마나 의존하는가?
+1. 입력 함수가 solution operator에 어떤 역할로 관여하는가?
 2. PDE 연산자가 **공간 이동에 대해 상대적인 구조(translation-relative / shift-equivariant structure)** 를 가지는가?
 
 특히 FNO가 Fourier 기반 구조를 사용하기 때문에, 위치 상대성이 있는 문제에서 강한 inductive bias를 보이는지, 반대로 절대 위치나 경계 조건이 중요한 문제에서는 coordinate channel이 도움이 되는지를 확인합니다.
@@ -17,12 +17,12 @@
 
 총 4개의 1D PDE를 사용합니다. 각 PDE는 초기함수 의존성 여부와 위치 상대성 여부를 기준으로 선택했습니다.
 
-| Config | PDE | 초기함수 의존성 | 위치 상대성 | 설명 |
+| Config | PDE | 입력 함수의 역할 | 위치 상대성 | 설명 |
 |---|---|---:|---:|---|
-| `periodic_heat` | Periodic Heat Equation | O | O | 주기 경계 조건을 가진 열 방정식 |
-| `dirichlet_heat` | Dirichlet Heat Equation | O | X | `u(0)=u(1)=0` 경계 조건을 가진 열 방정식 |
-| `periodic_poisson` | Periodic Poisson Equation | X | O | 주기 경계 조건을 가진 Poisson 방정식 |
-| `variable_poisson` | Variable-Coefficient Poisson Equation | X | X | 위치 의존 계수 `a(x)`를 가진 Poisson 방정식 |
+| `periodic_heat` | Periodic Heat Equation | 초기조건 | O | 주기 경계 조건을 가진 열 방정식 |
+| `dirichlet_heat` | Dirichlet Heat Equation | 초기조건 | X | `u(0)=u(1)=0` 경계 조건을 가진 열 방정식 |
+| `periodic_poisson` | Periodic Poisson Equation | forcing/source | O | 주기 경계 조건을 가진 Poisson 방정식 |
+| `variable_poisson` | Variable-Coefficient Poisson Equation | coefficient/operator-changing input | X | 위치 의존 계수 `a(x)`를 가진 Poisson 방정식 |
 
 ---
 
