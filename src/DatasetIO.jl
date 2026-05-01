@@ -14,9 +14,13 @@ using ..Config
 # It encapsulates X, Y, the configuration, and the grid used for processing.
 # ----------------------------------------------------------------------
 struct PDEData
-    X::AbstractArray{<:AbstractFloat}
-    Y::AbstractArray{<:AbstractFloat}
-    config::Dict{Symbol, Any}
+    X_train::AbstractArray{<:AbstractFloat}
+    Y_train::AbstractArray{<:AbstractFloat}
+    X_valid::AbstractArray{<:AbstractFloat}
+    Y_valid::AbstractArray{<:AbstractFloat}
+    X_test::AbstractArray{<:AbstractFloat}
+    Y_test::AbstractArray{<:AbstractFloat}
+    config::Dict{Symbol,Any}
     grid::AbstractArray{<:AbstractFloat}
 end
 
@@ -48,21 +52,19 @@ Loads the raw (X, Y) dataset from the specified JLD2 file path.
 Dict containing the loaded data X and Y arrays.
 """
 function load_dataset(config_path::String)
-    # NOTE: In a real scenario, data_path should be constructed from config_path/dataset_name.
-    # For the MVP, we assume a single, central data directory artifact.
-    # The actual path must be adjusted by the user based on the final artifact location.
     config = Config.load_config(config_path)
     dataset_name = String(config[:name])
     data_path = joinpath("data", "raw", "$(dataset_name).jld2")
-    
+
     try
         # Load the data using JLD2
         data = JLD2.load(data_path, "data")
-        
-        # Verify required keys exist
-        validate_xy(data[:X], data[:Y])
-        
-        return Dict(:X => data[:X], :Y => data[:Y])
+
+        for split in (:train, :valid, :test)
+            validate_xy(data[Symbol("X_$split")], data[Symbol("Y_$split")])
+        end
+
+        return data
     catch e
         @error "Failed to load dataset from $data_path. Check if data has been generated first. Error: $e"
         rethrow(e)
@@ -84,15 +86,15 @@ Array{Float32, 3} with shape (nx, c+1, samples).
 """
 function add_coordinate_channel(X_original::Array{Float32}, grid::Vector{Float32})
     N, C, S = size(X_original)
-    
+
     # Create the coordinate channel array: (N, 1, S)
     # We repeat the grid vector 'S' times along the sample dimension.
     # This assumes the grid is the same for all samples, which is true for PDE operator learning.
     coord_channel_reshaped = reshape(repeat(grid, 1, S), N, 1, S)
-    
+
     # Concatenate the coordinate channel along the channel dimension (dim=2)
     X_with_coord = hcat(X_original, coord_channel_reshaped)
-    
+
     return X_with_coord
 end
 
@@ -112,24 +114,30 @@ Loads the dataset and performs optional preprocessing (coordinate channel additi
 function load_and_preprocess_dataset(config_path::String, add_coord::Bool, grid::Vector{Float32})::PDEData
     @info "--- Preprocessing Dataset: $config_path ---"
     raw_data = load_dataset(config_path)
-    X_raw = raw_data[:X]
-    Y = raw_data[:Y]
-    
+
+    X_train = raw_data[:X_train]
+    Y_train = raw_data[:Y_train]
+    X_valid = raw_data[:X_valid]
+    Y_valid = raw_data[:Y_valid]
+    X_test = raw_data[:X_test]
+    Y_test = raw_data[:Y_test]
+
     if add_coord
-        @info "Adding coordinate channel to input X."
-        X = add_coordinate_channel(X_raw, grid)
-    else
-        X = X_raw
+        @info "Adding coordinate channel to input X train, valid, test."
+        X_train = add_coordinate_channel(X_train, grid)
+        X_valid = add_coordinate_channel(X_valid, grid)
+        X_test = add_coordinate_channel(X_test, grid)
     end
-    
-    @info "Data successfully preprocessed. X shape: $(size(X)), Y shape: $(size(Y))"
-    
+
+    @info "Data successfully preprocessed. X train shape: $(size(X_train)), Y train shape: $(size(Y_train))"
+
     # Return the structured data object containing all necessary context
     data_struct = PDEData(
-        X, 
-        Y, 
+        X_train, Y_train,
+        X_valid, Y_valid,
+        X_test, Y_test,
         Config.load_config(config_path),
-        grid
+        grid,
     )
     return data_struct
 end

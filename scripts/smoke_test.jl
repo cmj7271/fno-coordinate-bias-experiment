@@ -15,10 +15,10 @@ function smoke_test_pipeline()
     @info "================================================"
     @info " STARTING SMOKE TEST PIPELINE"
     @info "================================================"
-    
+
     # 1. Setup temporary, tiny config
     @info "1. Creating temporary smoke test configuration."
-    
+
     # Minimal, hardcoded configuration for smoke test (N=16, epochs=2)
     smoke_config = Dict(
         "name" => "smoke_test",
@@ -62,12 +62,12 @@ function smoke_test_pipeline()
             "shift_steps" => 4
         )
     )
-    
+
     config_path = "smoke_test.toml"
     open(config_path, "w") do io
         TOML.print(io, smoke_config)
     end
-    
+
     # To load it using the existing load_config structure which converts keys to symbols
     smoke_config_sym = Config.load_config(config_path)
 
@@ -75,7 +75,7 @@ function smoke_test_pipeline()
     @info "\n2. Generating tiny dataset (Periodic Heat)."
     try
         data = DataGenerators.generate_periodic_heat_dataset(smoke_config_sym)
-        @info "   -> Data generation successful. X shape: $(size(data[:X]))"
+        @info "   -> Data generation successful. X_train shape: $(size(data[:X_train]))"
         # Save the raw data artifact for the subsequent steps to load
         artifact_path = DatasetIO.dataset_path(smoke_config_sym)
         mkpath(dirname(artifact_path))
@@ -84,7 +84,7 @@ function smoke_test_pipeline()
         @error "Smoke Test Failed at Data Generation: $e"
         return false
     end
-    
+
     # 3. Train FNO (Smoke Test)
     @info "\n3. Training FNO (Smoke Test)."
     try
@@ -93,7 +93,7 @@ function smoke_test_pipeline()
     catch e
         @warn "Smoke Test Warning: FNO training failed or was skipped. Proceeding with DeepONet. Error: $e"
     end
-    
+
     # 4. Train DeepONet (Smoke Test)
     @info "\n4. Training DeepONet (Smoke Test)."
     try
@@ -103,17 +103,17 @@ function smoke_test_pipeline()
         @error "Smoke Test Failed at DeepONet Training: $e"
         return false
     end
-    
+
     # 5. Evaluate (Smoke Test)
     @info "\n5. Running smoke test evaluation."
     try
-        evaluate_result = Evaluate.evaluate_dataset(config_path) 
+        evaluate_result = Evaluate.evaluate_dataset(config_path)
         @info "   -> Evaluation successful. Mean Relative L2 Error: $(evaluate_result[:relative_l2_mean])"
     catch e
         @error "Smoke Test Failed at Evaluation: $e"
         return false
     end
-    
+
     @info "\n=================================================="
     @info "✅ SMOKE TEST PASSED (or gracefully skipped parts)."
     @info "=================================================="

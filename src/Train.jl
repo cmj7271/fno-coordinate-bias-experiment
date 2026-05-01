@@ -35,20 +35,6 @@ function mse_loss(model_name::Symbol, model, X, Y, grid_points, ps, st)
     return mean(abs2, Y_hat .- Y)
 end
 
-function make_split(n_samples::Int, rng)
-    @assert n_samples >= 2 "Need at least 2 samples for train/validation split."
-
-    indices = shuffle(rng, collect(1:n_samples))
-
-    n_valid = max(1, floor(Int, 0.2 * n_samples))
-    n_train = n_samples - n_valid
-
-    train_idx = indices[1:n_train]
-    valid_idx = indices[(n_train + 1):end]
-
-    return train_idx, valid_idx
-end
-
 function make_batches(indices::Vector{Int}, batch_size::Int)
     batches = Vector{Vector{Int}}()
 
@@ -87,19 +73,22 @@ function train_model(config_path::String, model_name::Symbol, use_coord::Bool)::
     grid_points = Float32.(range(0, 1, length=nx))
 
     dataset = DatasetIO.load_and_preprocess_dataset(config_path, use_coord, grid_points)
-    X = dataset.X
-    Y = dataset.Y
 
-    @info "Loaded dataset shapes: X=$(size(X)), Y=$(size(Y))"
+    X_train = dataset.X_train
+    Y_train = dataset.Y_train
+    X_valid = dataset.X_valid
+    Y_valid = dataset.Y_valid
 
-    @assert ndims(X) == 3 "X must be (nx, channels, samples). Got $(size(X))."
-    @assert ndims(Y) == 3 "Y must be (nx, 1, samples). Got $(size(Y))."
-    @assert size(X, 1) == size(Y, 1) "X/Y nx mismatch."
-    @assert size(Y, 2) == 1 "Y must have one output channel."
-    @assert size(X, 3) == size(Y, 3) "X/Y sample count mismatch."
+    @info "Loaded dataset shapes: X_train=$(size(X_train)), Y_train=$(size(Y_train))"
 
-    in_channels = size(X, 2)
-    n_samples = size(X, 3)
+    @assert ndims(X_train) == 3 "X must be (nx, channels, samples). Got $(size(X_train))."
+    @assert ndims(Y_train) == 3 "Y must be (nx, 1, samples). Got $(size(Y_train))."
+    @assert size(X_train, 1) == size(Y_train, 1) "X/Y nx mismatch."
+    @assert size(Y_train, 2) == 1 "Y must have one output channel."
+    @assert size(X_train, 3) == size(Y_train, 3) "X/Y sample count mismatch."
+
+    in_channels = size(X_train, 2)
+    n_train = size(X_train, 3)
 
     # 2. Build model
     if model_name == :fno
@@ -135,10 +124,7 @@ function train_model(config_path::String, model_name::Symbol, use_coord::Bool)::
     ps, st = Lux.setup(rng, model)
 
     # 4. Train/validation split
-    train_idx, valid_idx = make_split(n_samples, rng)
-
-    X_valid = X[:, :, valid_idx]
-    Y_valid = Y[:, :, valid_idx]
+    train_idx = collect(1:n_train)
 
     # 5. Optimizer
     epochs = Int(config[:train][:epochs])
@@ -158,7 +144,7 @@ function train_model(config_path::String, model_name::Symbol, use_coord::Bool)::
     valid_l2_history = Float32[]
 
     @info "--- Starting actual training for $model_name ---"
-    @info "epochs=$epochs, batch_size=$batch_size, lr=$learning_rate, train_samples=$(length(train_idx)), valid_samples=$(length(valid_idx))"
+    @info "epochs=$epochs, batch_size=$batch_size, lr=$learning_rate, train_samples=$(size(X_train, 3)), valid_samples=$(size(X_valid, 3))"
 
     # 6. Training loop
     for epoch in 1:epochs
@@ -168,8 +154,8 @@ function train_model(config_path::String, model_name::Symbol, use_coord::Bool)::
         epoch_losses = Float32[]
 
         for batch_idx in batches
-            X_batch = X[:, :, batch_idx]
-            Y_batch = Y[:, :, batch_idx]
+            X_batch = X_train[:, :, batch_idx]
+            Y_batch = Y_train[:, :, batch_idx]
 
             loss_value, back = Zygote.pullback(ps) do current_ps
                 mse_loss(model_name, model, X_batch, Y_batch, grid_points, current_ps, st)
@@ -227,8 +213,9 @@ function train_model(config_path::String, model_name::Symbol, use_coord::Bool)::
         :best_valid_l2_std => best_valid_std,
         :train_losses => train_losses,
         :valid_l2_history => valid_l2_history,
-        :input_shape => size(X),
-        :target_shape => size(Y),
+        :train_shape => size(X_train),
+        :valid_shape => size(X_valid),
+        :test_shape => size(dataset.X_test),
         :message => "Trained checkpoint with best validation relative L2.",
     )
 
