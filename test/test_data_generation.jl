@@ -48,18 +48,18 @@ end
 
     # Test periodic_heat generation
     test_data = DataGenerators.generate_periodic_heat_dataset(dummy_config)
-    X = test_data[:X]
-    Y = test_data[:Y]
+    X = test_data[:X_train]
+    Y = test_data[:Y_train]
 
     # Assertions:
     # 1. Check shapes (nx, 1, 1) for single sample
     @test size(X) == (32, 1, 1)
     @test size(Y) == (32, 1, 1)
-    
+
     # 2. Check for NaN or Inf
     @test all(isfinite, X)
     @test all(isfinite, Y)
-    
+
     # 3. Check periodicity/mean (should be near zero for the target)
     # Since we only generated one sample, we check the mean of the target Y
     @test isapprox(mean(Y[:, :, 1]), 0.0, atol=1e-5)

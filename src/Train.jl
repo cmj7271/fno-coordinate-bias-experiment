@@ -123,7 +123,7 @@ function train_model(config_path::String, model_name::Symbol, use_coord::Bool)::
 
     ps, st = Lux.setup(rng, model)
 
-    # 4. Train/validation split
+    # 4. Setup training batch indices
     train_idx = collect(1:n_train)
 
     # 5. Optimizer
