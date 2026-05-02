@@ -18,7 +18,7 @@
 총 4개의 1D PDE를 사용합니다. 각 PDE는 초기함수 의존성 여부와 위치 상대성 여부를 기준으로 선택했습니다.
 
 | Config | PDE | 입력 함수의 역할 | 위치 상대성 | 설명 |
-|---|---|---:|---:|---|
+|---|---|---|---|---|
 | `periodic_heat` | Periodic Heat Equation | 초기조건 | O | 주기 경계 조건을 가진 열 방정식 |
 | `dirichlet_heat` | Dirichlet Heat Equation | 초기조건 | X | `u(0)=u(1)=0` 경계 조건을 가진 열 방정식 |
 | `periodic_poisson` | Periodic Poisson Equation | forcing/source | O | 주기 경계 조건을 가진 Poisson 방정식 |
